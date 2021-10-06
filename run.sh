@@ -18,7 +18,7 @@ run_submission() {
     local image_name=minbert_$name
     docker build \
         --build-arg target=work/$name/$name \
-        --build-arg miniconda_installer=grader-files/Miniconda3-latest-Linux-x86_64.sh \
+        --build-arg miniconda_installer=$miniconda_installer \
         -t $image_name \
         -f Dockerfile \
         .
@@ -27,6 +27,12 @@ run_submission() {
     docker rm $image_name
     chmod -R a+rwX work/$name
 }
+
+miniconda_installer=Miniconda3-latest-Linux-x86_64.sh
+if [ ! -e $miniconda_installer ]; then
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+fi
+
 
 mkdir -p work
 chmod -R a+rwX work
