@@ -48,7 +48,9 @@ for zip in $zips; do
     while [ $(jobs | wc -l) -ge $max_concurrent ]; do
         sleep 2
     done
-    name=$(basename ${zip%.*})
+    name=$(basename $zip)
+    name=${name%-*}
+    name=${name##*_}
     run_submission_wrapper $name $(readlink -f $zip) &
 done
 
