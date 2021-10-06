@@ -10,11 +10,12 @@ RUN rm mc-installer.sh
 
 ENV PATH $PATH:/app/miniconda/bin
 
+ADD setup.sh ./
+RUN bash setup.sh
+RUN rm setup.sh
 
 WORKDIR /app/submission
 ADD grader-files ./
-RUN bash setup.sh
-RUN rm setup.sh
 
 ARG target
 

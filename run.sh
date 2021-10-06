@@ -1,11 +1,15 @@
 #!/bin/bash
 
+zips=$@
+miniconda_installer=Miniconda3-latest-Linux-x86_64.sh
+miniconda_installer_url=https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+
+max_concurrent=4
+
 if [ $(whoami) != root ]; then
     echo Script must be run as root
     exit 1
 fi
-
-zips=$@
 
 run_submission() {
     local name=$1
@@ -22,22 +26,30 @@ run_submission() {
         -t $image_name \
         -f Dockerfile \
         .
-    docker run --name $image_name $image_name
+    docker run --cpus 4.0 --memory=1g --name $image_name $image_name
     docker cp $image_name:/app/submission/results.txt work/$name.results.txt
     docker rm $image_name
-    chmod -R a+rwX work/$name
 }
 
-miniconda_installer=Miniconda3-latest-Linux-x86_64.sh
 if [ ! -e $miniconda_installer ]; then
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    wget $miniconda_installer_url
 fi
 
+run_submission_wrapper() {
+    echo Running $1...
+    run_submission $@ &> work/$1.out
+    chmod -R a+rwX work
+    echo Finished $1.
+}
 
 mkdir -p work
-chmod -R a+rwX work
 
 for zip in $zips; do
+    while [ $(jobs | wc -l) -ge $max_concurrent ]; do
+        sleep 2
+    done
     name=$(basename ${zip%.*})
-    run_submission $name $(readlink -f $zip) | tee work/$name.out
+    run_submission_wrapper $name $(readlink -f $zip) &
 done
+
+wait
