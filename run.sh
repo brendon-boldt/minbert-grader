@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 get_gpu_file() {
     echo gpu_$1.lock
 }
@@ -37,6 +35,7 @@ run_submission() {
         --memory=16g \
         --name $image_name \
         $image_name
+    rm $(get_gpu_file $gpu)
     docker cp $image_name:/app/submission/results.txt work/$name.results.txt
     docker rm $image_name
 }
@@ -74,7 +73,7 @@ mkdir -p work
 for zip in $zips; do
     gpu=$(get_avail_gpu)
     while [[ -z $gpu ]]; do
-        sleep 5
+        sleep 1
         gpu=$(get_avail_gpu)
     done
     name=$(basename $zip)
@@ -82,7 +81,6 @@ for zip in $zips; do
     name=${name%-*}
     name=${name##*_}
     run_submission_wrapper $name $(readlink -f $zip) $gpu &
-    rm $(get_gpu_file $gpu)
 done
 
 wait
