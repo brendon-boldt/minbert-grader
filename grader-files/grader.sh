@@ -14,21 +14,38 @@ echo sanity_check,$sanity_check_result >> results.txt
 
 mkdir output
 
-timeout 3600 python classifier.py \
-    --epochs 1 \
-    --use_gpu \
-    --option pretrain \
-    --lr 1e-3 \
-    --train data/sst-train.txt \
-    --dev data/sst-dev.txt \
-    --test data/sst-test.txt \
-    --dev_out output/sst-dev.txt \
-    --test_out output/sst-test.txt \
-    --seed 28392
-
 compute_accuracy() {
     <$1 awk -F' \|\|\| ' '{sum+= $2==$3}; END {print sum/NR}'
 }
 
-echo sst-dev-acc,$(compute_accuracy output/sst-dev.txt) >> results.txt
-echo sst-test-acc,$(compute_accuracy output/sst-test.txt) >> results.txt
+# Check accuracy of pre-computed outputs
+echo best-sst-dev-acc,$(compute_accuracy sst-dev-output.txt) >> results.txt
+echo best-sst-test-acc,$(compute_accuracy sst-test-output.txt) >> results.txt
+echo best-cfimdb-dev-acc,$(compute_accuracy cfimdb-dev-output.txt) >> results.txt
+echo best-cfimdb-test-acc,$(compute_accuracy cfimdb-test-output.txt) >> results.txt
+
+run_model() {
+    local dataset=$1
+    local pretrain_or_finetune=$2
+    local dev_out_fn=output/$dataset-$pretrain_or_finetune-dev.txt
+    local test_out_fn=output/$dataset-$pretrain_or_finetune-test.txt
+    timeout 3600 python classifier.py \
+        --epochs 1 \
+        --use_gpu \
+        --option $pretrain_or_finetune \
+        --lr 1e-3 \
+        --train data/$dataset-train.txt \
+        --dev data/$dataset-dev.txt \
+        --test data/$dataset-test.txt \
+        --dev_out $dev_out_fn \
+        --test_out $test_out_fn \
+        --seed 28392
+    echo $dataset-$pretrain_or_finetune-dev-acc,$(compute_accuracy $dev_out_fn) \
+        >> results.txt
+    echo $dataset-$pretrain_or_finetune-test-acc,$(compute_accuracy $test_out_fn) \
+        >> results.txt
+}
+
+run_model sst pretrain
+run_model sst finetune
+run_model cfimdb finetune
