@@ -71,15 +71,21 @@ docker build \
 mkdir -p work
 
 for zip in $zips; do
+    name=$(basename $zip)
+    name=${name%.*}
+    name=${name%-*}
+    name=${name##*_}
+
+    if [[ -e work/$name.results.txt ]]; then
+        echo Found results file for $name, skipping.
+        continue
+    fi
+
     gpu=$(get_avail_gpu)
     while [[ -z $gpu ]]; do
         sleep 1
         gpu=$(get_avail_gpu)
     done
-    name=$(basename $zip)
-    name=${name%.*}
-    name=${name%-*}
-    name=${name##*_}
     run_submission_wrapper $name $(readlink -f $zip) $gpu &
 done
 
