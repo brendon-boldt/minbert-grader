@@ -29,11 +29,16 @@ run_model() {
     local pretrain_or_finetune=$2
     local dev_out_fn=output/$dataset-$pretrain_or_finetune-dev.txt
     local test_out_fn=output/$dataset-$pretrain_or_finetune-test.txt
-    timeout 3600 python classifier.py \
-        --epochs 1 \
+    if [[ $pretrain_or_finetune == "pretrain" ]]; then
+        local lr=1e-3
+    else
+        local lr=1e-5
+    fi
+    time timeout 36000 python classifier.py \
+        --epochs 10 \
         --use_gpu \
         --option $pretrain_or_finetune \
-        --lr 1e-3 \
+        --lr $lr \
         --train data/$dataset-train.txt \
         --dev data/$dataset-dev.txt \
         --test data/$dataset-test.txt \
