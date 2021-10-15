@@ -34,10 +34,16 @@ run_model() {
     else
         local lr=1e-5
     fi
+    if [[ $dataset == "sst" ]]; then
+        local batch_size=64
+    else
+        local batch_size=8
+    fi
     time timeout 36000 python classifier.py \
         --epochs 10 \
         --use_gpu \
         --option $pretrain_or_finetune \
+        --batch_size $batch_size \
         --lr $lr \
         --train data/$dataset-train.txt \
         --dev data/$dataset-dev.txt \
