@@ -2,6 +2,11 @@
 
 source activate bert_hw
 
+cuda_is_available=$(python -c 'import torch; print(torch.cuda.is_available()')
+if [[ $cuda_is_available == True ]]; then
+    gpu_flag=--use_gpu
+fi
+
 rm -f results.txt
 
 timeout 60 python -m optimizer_test
@@ -41,7 +46,7 @@ run_model() {
     fi
     time timeout 36000 python classifier.py \
         --epochs 10 \
-        --use_gpu \
+        $gpu_flag \
         --option $pretrain_or_finetune \
         --batch_size $batch_size \
         --lr $lr \

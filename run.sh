@@ -56,7 +56,14 @@ if [ $(whoami) != root ]; then
     exit 1
 fi
 
-num_gpus=$(nvidia-smi --format=csv,noheader --query-gpu=uuid | wc -l)
+
+nvidia-smi &> /dev/null
+if [[ $? ]]; then
+    echo 'No GPUs available; running CPU-only.'
+    num_gpus=0
+else
+    num_gpus=$(nvidia-smi --format=csv,noheader --query-gpu=uuid | wc -l)
+fi
 
 if [ ! -e $miniconda_installer ]; then
     wget $miniconda_installer_url
@@ -82,7 +89,7 @@ for zip in $zips; do
     fi
 
     gpu=$(get_avail_gpu)
-    while [[ -z $gpu ]]; do
+    while [[ $num_gpus -gt 0 ]] && [[ -z $gpu ]]; do
         sleep 1
         gpu=$(get_avail_gpu)
     done
