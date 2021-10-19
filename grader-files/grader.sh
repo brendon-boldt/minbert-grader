@@ -2,8 +2,8 @@
 
 source activate bert_hw
 
-cuda_is_available=$(python -c 'import torch; print(torch.cuda.is_available()')
-if [[ $cuda_is_available == True ]]; then
+cuda_is_available=$(python -c 'import torch; print(torch.cuda.is_available())')
+if [[ $cuda_is_available == "True" ]]; then
     gpu_flag=--use_gpu
 fi
 

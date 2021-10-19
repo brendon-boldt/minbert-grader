@@ -80,7 +80,7 @@ mkdir -p work
 for zip in $zips; do
     name=$(basename $zip)
     name=${name%.*}
-    name=${name%-*}
+    name=${name%%-*}
     name=${name##*_}
 
     if [[ -e work/$name.results.txt ]]; then
