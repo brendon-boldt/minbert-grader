@@ -58,7 +58,7 @@ fi
 
 
 nvidia-smi &> /dev/null
-if [[ $? ]]; then
+if [[ $? -ne 0 ]]; then
     echo 'No GPUs available; running CPU-only.'
     num_gpus=0
 else
