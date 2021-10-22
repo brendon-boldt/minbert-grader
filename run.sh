@@ -36,7 +36,10 @@ run_submission() {
         --name $image_name \
         $image_name
     rm $(get_gpu_file $gpu)
-    docker cp $image_name:/app/submission/results.txt work/$name.results.txt
+    rm -rf work/$name-results/
+    mkdir work/$name-results/
+    docker cp $image_name:/app/submission/results.txt work/$name-results/
+    docker cp $image_name:/app/submission/output/. work/$name-results/output
     docker rm $image_name
 }
 
@@ -77,7 +80,10 @@ docker build \
 
 mkdir -p work
 
+i=0
+total_zips=$( echo $zips | tr ' ' '\n' | wc -l)
 for zip in $zips; do
+    i=$(( ++i ))
     name=$(basename $zip)
     name=${name%.*}
     name=${name%%-*}
@@ -93,6 +99,7 @@ for zip in $zips; do
         sleep 1
         gpu=$(get_avail_gpu)
     done
+    echo -n "$i/$total_zips "
     run_submission_wrapper $name $(readlink -f $zip) $gpu &
 done
 

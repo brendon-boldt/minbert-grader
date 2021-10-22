@@ -32,6 +32,7 @@ echo best-cfimdb-test-acc,$(compute_accuracy cfimdb-test-output.txt) >> results.
 run_model() {
     local dataset=$1
     local pretrain_or_finetune=$2
+    local timeout=$3
     local dev_out_fn=output/$dataset-$pretrain_or_finetune-dev.txt
     local test_out_fn=output/$dataset-$pretrain_or_finetune-test.txt
     if [[ $pretrain_or_finetune == "pretrain" ]]; then
@@ -44,7 +45,7 @@ run_model() {
     else
         local batch_size=8
     fi
-    time timeout 36000 python classifier.py \
+    time timeout $timeout python classifier.py \
         --epochs 10 \
         $gpu_flag \
         --option $pretrain_or_finetune \
@@ -62,6 +63,6 @@ run_model() {
         >> results.txt
 }
 
-run_model sst pretrain
-run_model sst finetune
-run_model cfimdb finetune
+run_model sst pretrain $(( 6 * 5 * 60 ))
+run_model sst finetune $(( 9 * 5 * 60 ))
+run_model cfimdb finetune $(( 14 * 5 * 60 ))
