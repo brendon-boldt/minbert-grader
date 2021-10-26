@@ -14,11 +14,15 @@ FIELDS = [
     "best-cfimdb-test-acc",
     "sst-pretrain-dev-acc",
     "sst-pretrain-test-acc",
+    "sst-finetune-dev-acc",
+    "sst-finetune-test-acc",
+    "cfimdb-finetune-dev-acc",
+    "cfimdb-finetune-test-acc",
 ]
 
 
 def process_file(p: Path) -> str:
-    name = p.name.split(".")[0]
+    name = p.parents[0].name.split('-')[0]
 
     with p.open() as fo:
         kvs = dict(l.split(",") for l in fo.read().split("\n") if l)
@@ -36,7 +40,7 @@ def main():
         fo.write("name,")
         fo.write(",".join(FIELDS))
         fo.write("\n")
-        for p in workdir.glob("*.results.txt"):
+        for p in workdir.glob("./*-results/results.txt"):
             fo.write(process_file(p))
 
 
